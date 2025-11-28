@@ -275,27 +275,59 @@ def get_order_address(request, order_number):
 
 # renders HTML page
 from django.shortcuts import render
-def get_invoice(request, order_number):
-    orders = Order.objects.filter(order_number = order_number, is_order_placed = True).select_related('food')
-    address = OrderAddress.objects.get(order_number = order_number)
+# def get_invoice(request, order_number):
+#     orders = Order.objects.filter(order_number = order_number, is_order_placed = True).select_related('food')
+#     address = OrderAddress.objects.get(order_number = order_number)
 
-    grand_total = 0
+#     grand_total = 0
+#     order_data = []
+#     for order in orders:
+#         total_price = order.food.item_price * order.quantity
+#         grand_total += total_price
+#         order_data.append({
+#             'food': order.food,
+#             'quantity': order.quantity,
+#             'total_price' : total_price
+#         })
+
+#     return render(request, 'invoice.html', {
+#             'order_number': order_number,
+#             'address':address,
+#             'grand_total':grand_total,
+#             'orders':order_data
+#         })
+from decimal import Decimal
+VAT_RATE = Decimal('0.13')
+def get_invoice(request, order_number):
+    orders = Order.objects.filter(order_number=order_number, is_order_placed=True).select_related('food')
+    address = OrderAddress.objects.get(order_number=order_number)
+
+    grand_total = Decimal('0.00')
     order_data = []
+   
+   
     for order in orders:
-        total_price = order.food.item_price * order.quantity
-        grand_total += total_price
+        base_price = order.food.item_price * order.quantity
+        vat_amount = (base_price * VAT_RATE).quantize(Decimal('0.01'))  # VAT for this item
+        total_price_with_vat = base_price + vat_amount  # total including VAT
+
+        grand_total += total_price_with_vat
+
         order_data.append({
             'food': order.food,
             'quantity': order.quantity,
-            'total_price' : total_price
+            'base_price': base_price,
+            'vat_amount': vat_amount,
+            'total_price_with_vat': total_price_with_vat
         })
 
     return render(request, 'invoice.html', {
-            'order_number': order_number,
-            'address':address,
-            'grand_total':grand_total,
-            'orders':order_data
-        })
+        'order_number': order_number,
+        'address': address,
+        'grand_total': grand_total,
+        'orders': order_data,
+        'vat_rate': 13
+    })
 
 from .serializers import UserSerializer
 @api_view(['GET'])
@@ -381,10 +413,21 @@ def order_between_dates(request):
     status=request.data.get('status')
 
     orders = OrderAddress.objects.filter(order_time__date__range=[from_date,to_date])
+
+    STATUS_MAP = {
+        "orders_confirmed": "Order Confirmed",
+        "food_being_prepared": "Food Being Prepared",
+        "food_delivered": "Food Delivered",
+        "food_pickup": "Food Pickup",
+        "order_cancelled": "Order Cancelled",
+    }
+
+
     if status == 'order_not_confirmed':
         orders = orders.filter(order_final_status__isnull = True)
     elif status != "all_orders":
-        orders = orders.filter(order_final_status = status)
+         db_status = STATUS_MAP.get(status)
+         orders = orders.filter(order_final_status = db_status)
 
     serializer = OrderSummarySerializer(orders.order_by('-order_time'), many=True)
     return Response(serializer.data)
@@ -462,7 +505,7 @@ def category_detail(request, id):
     
     elif request.method == 'DELETE':
         category.delete()
-        return Response({'message':"Category Deleted Successfully"},status = 200)
+    return Response({'message':"Category Deleted Successfully"},status = 200)
     
 @api_view(['DELETE'])
 def delete_food(request, id):
@@ -601,7 +644,7 @@ def top_selling_foods(request):
     top_foods = (
         Order.objects
                   .filter(is_order_placed = True)
-                  .values('food__item_name')#group by 
+                  .values('food__item_name', 'food__item_price')#group by 
                   .annotate
                     (total_sold=Sum('quantity'))
                     .order_by('-total_sold')[:5]#to display 5 top selling in top
@@ -724,3 +767,89 @@ def track_order(request, order_number):
 
     serializer = FoodTrackingSerializer(tracking_entries, many=True)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+def cancel_order(request, order_number):
+    
+    remark = request.data.get('remark')
+    address = OrderAddress.objects.get(order_number = order_number)
+    sample_order = Order.objects.filter(order_number = order_number).first()
+    FoodTracking.objects.create(
+        order = sample_order,
+        remark = remark,
+        status = 'Order Cancelled',
+        order_cancelled_by_user = True,
+        
+    )
+    address.order_final_status = "Order Cancelled"
+    address.save()
+    return Response({"message":"Order Cancelled successfully"}, status=200)
+        
+
+    
+
+@api_view(['POST'])
+def add_review(request, food_id):
+    
+    user_id = request.data.get('user_id')
+    rating = request.data.get('rating')
+    comment = request.data.get('comment')
+    try:
+        user = User.objects.get(id = user_id)
+        food = Food.objects.get(id = food_id)
+    except (User.DoesNotExist, Food.DoesNotExist):
+        return Response({"message":"User or Food not Found"}, status=404)
+
+    Review.objects.create(
+        user = user,
+        food = food,
+        rating = rating,
+        comment = comment
+    )
+    return Response({'message':'Review Submitted'}, status = 201)
+
+
+from .serializers import ReviewSerializer
+@api_view(['GET'])
+def food_reviews(request, food_id):
+    reviews = Review.objects.filter(food_id = food_id).order_by('-created_at')
+    serializer = ReviewSerializer(reviews, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['DELETE','PUT'])
+def review_detail(request, id):
+    try:
+        reviews = Review.objects.get(id = id)
+
+    except Review.DoesNotExist:
+        return Response({"message":"Review not found"}, status= 404)
+
+    if request.method == "DELETE":
+        reviews.delete()
+        return Response({"message":"Review Deleted"}, status=200)
+
+    if request.method == "PUT":
+        data = {'rating':request.data.get("rating",reviews.rating),
+                'comment':request.data.get("comment",reviews.comment)
+                }
+        serializer = ReviewSerializer(reviews, data = data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Review Updated"}, status=200)
+        return Response(serializer.errors, status=400)
+    
+
+from django.db.models import Count,Avg
+@api_view(['GET'])
+def food_rating_summary(request, food_id):
+    reviews = Review.objects.filter(food_id = food_id)
+    rating_summary= reviews.values('rating').annotate(count=Count('rating')).order_by('-rating')#values() groupby members  
+    average= reviews.aggregate(average= Avg('rating'))['average'] or 0 #['average'] is dict
+    total_reviews= reviews.count()
+    return Response({
+        'average':round(average,1),#after decimal needed only 1 value so used 1 with avg
+        'total_reviews':total_reviews,
+        'breakdown':{entry['rating']: entry['count'] for entry in rating_summary}#shows rating with total count
+    })

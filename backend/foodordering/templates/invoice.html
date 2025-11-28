@@ -12,6 +12,9 @@
 </head>
 <body>
 
+    <h1 style="text-align:center;">Name of Restuarant: Foodie Fast</h1>
+    <hr/>
+
     <h2>Invoice for Order #{{order_number}}
     <p><strong>Date:</strong>{{address.order_time}}</p>
     <p><strong>Address:</strong>{{address.address}}</p>
@@ -23,6 +26,7 @@
                 <th>Food Item</th>
                 <th>Price</th>
                 <th>Qty</th>
+                 <th>VAT ({{ vat_rate }}%)</th>
                 <th>Total</th>
             </tr>
         </thead>
@@ -34,17 +38,18 @@
                     <td>{{order.food.item_name}}</td>
                     <td>{{order.food.item_price}}</td>
                     <td>{{order.quantity}}</td>
-                    <td>{{order.total_price}}</td>
+                    <td>{{order.vat_amount}}</td>
+                    <td>{{order.total_price_with_vat}}</td>
                </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <th colspan='4' style="text-align:right">
+                <th colspan='5' style="text-align:right">
                     Grand Total
                 </th> 
                  <th style="text-align:right">
-                    ₹ {{grand_total}}
+                    Rs. {{grand_total}}
                 </th> 
             </tr>
         </tfoot>
