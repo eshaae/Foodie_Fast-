@@ -8,7 +8,7 @@ const OrderReport = () => {
     const [formData, setFormData] = useState({
         'from_date':'',
         'to_date':'',
-        'status':'all',
+        'status':'all_orders',
     })
     const [orders, setOrders] = useState([])
           const adminUser = localStorage.getItem('adminUser');

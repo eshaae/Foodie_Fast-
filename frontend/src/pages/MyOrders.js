@@ -24,7 +24,17 @@ const MyOrders = () => {
                                  
                   
                   },[userId]);
-       
+
+const getStatusBadge= (status) =>{
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('delivered')) return 'success';
+    if (statusLower.includes('food being prepared')) return 'warning';
+    if (statusLower.includes('food pickup')) return 'success';
+    if (statusLower.includes('food delivered')) return 'success';
+    if (statusLower.includes('order cancelled')) return 'danger';
+    if (statusLower.includes('confirmed')) return 'info';
+    return 'secondary';
+}
   return (
     <PublicLayout>
         
@@ -52,7 +62,7 @@ const MyOrders = () => {
                             <p className='text-muted mb-1'>
                                 <strong>Date:</strong> {new Date(order.order_time).toLocaleString()}
                             </p>
-                            <span className='badge bg-secondary'>{order.order_final_status}</span>
+                            <span className={`badge bg-${getStatusBadge(order.order_final_status)}`}>{order.order_final_status}</span>
                             
                         </div>
                         <div className='mt-3 mt-md-0'>

@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 
-const CancelOrderModal = () => {
+const CancelOrderModal = ({show, handleClose,orderNumber,paymentMode} ) => {
     const [remark, setRemark] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -8,15 +8,16 @@ const CancelOrderModal = () => {
     const handleSubmit = async() =>{
         if(!remark.trim()){
             setError('Please Provide a Reason for Cancellation.');
+           return;
         }
 
         try{
-            const response = await fetch(`http://127.0.0.1:8000/api/cancel_order/${orderNumber}/`, 
+            const response = await fetch(`http://127.0.0.1:8000/api/cancel_order/${orderNumber}/`, {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({
                     remark
-                })
+                }),
             });
                 const result =  await response.json();
             if(response.ok ){
@@ -36,22 +37,36 @@ const CancelOrderModal = () => {
                   setError("Something went wrong");
         }
               
-    }
+    };
   return (
     <div>
-        <div class="modal" tabindex="-1">
-  <div class="modal-dialog">
+        <div class={`modal fade ${show ? 'show d-block' : ''}`} tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Modal title</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Cancel Order #{orderNumber}</h5>
+        <button type="button" class="btn-close" onClick={handleClose}></button>
       </div>
       <div class="modal-body">
-        <p>Modal body text goes here.</p>
+        {message ? (
+          <div className='alert alert-success'>
+            {message}
+          </div>
+        ) :(
+            <>
+            <label className='form-label'>Reason for Cancellation</label>
+            <textarea className='form-control' rows='4' value={remark}
+            onChange={(e) => setRemark(e.target.value)} placeholder='Enter reason here...'
+            > </textarea>
+              {error && <div className='text-danger mt-2'>{error}</div>}
+
+           
+            </>
+        )}
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+      <div classNme="modal-footer">
+        <button type="button" className="btn btn-secondary" onClick={handleClose}>Close</button>
+        <button type="button" className="btn btn-danger" onClick={handleSubmit}>Cancel Order</button>
       </div>
     </div>
   </div>

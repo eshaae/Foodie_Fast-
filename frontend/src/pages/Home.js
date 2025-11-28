@@ -9,7 +9,11 @@ import { useWishlist } from '../context/WishlistContext';
 const Home = () => {
   const  [foods, setFoods] = useState([]);
   const  [wishlist, setWishlist] = useState([]);
-  const {wishlistCount, setWishlistCount} = useWishlist();  
+  const {wishlistCount, setWishlistCount} = useWishlist();
+  const  [ratings, setRatings] = useState({});
+  const[hovered, setHovered] = useState(null);
+
+
   const userId = localStorage.getItem('userId');
       //useLocation().search stores value of ?q=burger
       
@@ -44,6 +48,29 @@ const Home = () => {
                          
           
             },[userId]);
+            
+             useEffect(() => {
+                         
+                             
+                          const fetchAllRatings = async () =>{
+                            const allRatings= {};
+                            for (let food of foods){
+                              const res = await fetch(`http://127.0.0.1:8000/api/food_rating_summary/${food.id}`)
+
+                              const data = await res.json();
+                              allRatings[food.id] = data;
+                            }
+                            setRatings(allRatings);
+                          }
+
+                          if (foods.length > 0){
+                            fetchAllRatings();
+                          }
+          
+            },[foods]);
+
+
+
 
     const toogleWishlist = async(foodId) =>{
       //checking if user is logged in or not
@@ -149,6 +176,42 @@ const Home = () => {
                         </h5>   
                         <p className='card-text text-muted'> {food.item_description?.slice(0,40)}...</p>
 
+
+                        {ratings[food.id] &&(
+                          <div className='mb-2'
+                            onMouseEnter={() =>setHovered(food.id)}
+                            onMouseLeave={() =>setHovered(null)}
+                           > 
+
+                            <div>
+                              <span className='text-warning'>
+                                {Array(Math.round(ratings[food.id].average)).fill().map((_,i) => (
+                                  <i key={i} className='fas fa-star'></i>
+                                ))}
+
+                                  {Array(5- Math.round(ratings[food.id].average)).fill().map((_,i) => (
+                                  <i key={i} className='far fa-star'></i>
+                                ))}
+                              </span>
+
+                              <small className='text-muted ms-2'>
+                                {ratings[food.id].average} ({ratings[food.id].total_reviews} ratings)
+                              </small>
+                             </div>
+                          </div>
+                        )}
+
+
+
+
+
+
+
+
+
+
+
+
                         <div className='d-flex justify-content-between align-items-center'>
                             <span className='fw-bold'>Rs. {food.item_price}</span>
                             {food.is_available ? (<Link to={`/food/${food.id}`} className='btn btn-outline-primary btn-sm'>
@@ -204,7 +267,7 @@ const Home = () => {
       <h4>
         Order Simply.
       </h4>
-      <Link to='' className='btn btn-dark btn-lg '>
+      <Link to='/food-menu' className='btn btn-dark btn-lg '>
       Browse Menu</Link>
     </section>
 

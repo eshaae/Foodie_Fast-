@@ -73,7 +73,7 @@ const ManageUser = () => {
 
 
         <h5 className='text-end text-muted'>
-            <i className='fas fa-database me-1'></i>Total Usera
+            <i className='fas fa-database me-1'></i>Total Users
             <span className='ms-2 badge bg-success'>{users.length}</span>
 
         </h5>

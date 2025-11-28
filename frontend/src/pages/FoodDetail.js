@@ -12,9 +12,14 @@ const FoodDetail = () => {
     const{id} =useParams();
     const navigate = useNavigate();
     const  [food, setFood] = useState(null);
-   
+    const  [reviews, setReviews] = useState([]);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment ] = useState('');
+    const [hoveredRating, setHoveredRating ] = useState(0);
+    const [editId, setEditId ] = useState(null);
+    
         useEffect(() => {
-                             {
+                             
                                   //calling api
                                   //fetch () returns response as object
                                   fetch(`http://127.0.0.1:8000/api/foods/${id}`)
@@ -23,9 +28,20 @@ const FoodDetail = () => {
                                       setFood(data)
                      
                               })
+
+                              
+                             {
+                                  //calling api
+                                  //fetch () returns response as object
+                                  fetch(`http://127.0.0.1:8000/api/reviews/${id}`)
+                                  .then(res => res.json()) //changing into json
+                                  .then(data => {
+                                      setReviews(data)
+                     
+                              })
                              }
               
-                            },[]);
+                            },[id]);
 
 const handleAddToCart = async () => {
     if(!userId){
@@ -44,7 +60,7 @@ const handleAddToCart = async () => {
       const result = await response.json();
 
       if (response.status === 200) {
-        toast.success(result.message || "Item added to cart");
+        toast.success(result.message || "Review Submitted");
          setTimeout(() => {
          navigate('/cart');
         }, 2000);
@@ -59,6 +75,109 @@ const handleAddToCart = async () => {
     }
   };
 
+  const handleReviewSubmit = async () => {
+    if(!userId){
+        toast.warning('Please login first to submit review');
+        navigate('/login');
+        return;
+    }
+
+    if(rating < 1 || rating>5)
+    
+      {
+        toast.error('Please select a rating from 1 to 5');
+        return;
+        
+      }
+      const payload = {
+        user_id : userId,
+        food : id,
+        rating,
+        comment
+      };
+
+      const url = editId 
+      ? `http://127.0.0.1:8000/api/review_edit/${editId}/`
+      :`http://127.0.0.1:8000/api/reviews/add/${id}/`;
+
+      const method = editId ? 'PUT' : 'POST';
+      try {
+      const response = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json(); 
+
+      if (response.ok) {
+        toast.success(editId ?  'Review updated':"Review submitted");
+        setComment('');
+        setRating(0);
+        setEditId(null);
+        const updatedReviews= await fetch(`http://127.0.0.1:8000/api/reviews/${id}/`).then(res => res.json());
+        setReviews(updatedReviews);
+         
+      }
+      else {
+        toast.error(result.message || "Something went wrong!!!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error connecting to server");
+    }
+  };
+
+  const fetchReviews = async () => {
+    const res = await fetch(`http://127.0.0.1:8000/api/reviews/${id}/`);
+    const data  = await res.json();
+    setReviews(data);
+  };
+
+   const handleDeleteReview = async (id) => {
+    const confirmDelete = window.confirm("Are you sure to delete this review?");
+    if (!confirmDelete) return;
+
+    const res = await fetch(`http://127.0.0.1:8000/api/review_edit/${id}/`,
+      {
+        method: 'DELETE',
+      }
+    );
+
+    if(res.ok)
+    {
+      toast.success('Review deleted.')
+      fetchReviews();//reload 
+    }
+    else{
+      toast.error('Failed to delete');
+    }
+  };
+
+const renderStars = (count, clickable = false) => {
+  const stars = [];
+  for (let i = 1; i <= 5; i++){
+    stars.push(
+      <i 
+      key={i}
+      className={`fa-star ${i<=(hoveredRating || count ) ? 'fas text-warning': 'far text-secondary'}`}
+      style={{cursor:clickable ? 'pointer':'default', fontSize:'20px', marginRight:'4px'}}
+      onClick={clickable ? ()=> setRating(i): undefined}
+      onMouseEnter={clickable ? ()=> setHoveredRating(i) : undefined}
+      onMouseLeave = {clickable ? ()=> setHoveredRating(0): undefined}
+      ></i>
+
+    )
+  }
+  return stars;
+
+}
+
+const handleEditReview = (rev)=>{
+  setRating(rev.rating);
+  setComment(rev.comment);
+  setEditId(rev.id);
+};
 
 
   if(!food) return <div>Loading...</div>
@@ -95,7 +214,62 @@ const handleAddToCart = async () => {
 
         </div>
 
-        
+        <hr/>
+        <div className='mt-5'>
+          <h4>Customer Reviews</h4>
+          {reviews.length === 0? (
+            <p className='text-muted fst-italic'>No reviews yet. Be the first to share your thoughts.</p>
+          ): (
+            reviews.map((rev) => (
+            <div key={rev.id} className='border-bottom mb-3 pb-2'>
+              <div className='d-flex justify-content-between'>
+                <div>
+                  <strong>{rev.user_name}</strong><span className='ms-2'>{renderStars(rev.rating)}</span>
+                </div>
+
+                {rev.user_id === parseInt(userId) &&(
+                  <div className='text-end'>
+                    <i className='fas fa-edit text-primary me-2'
+                    style={{cursor:'pointer', fontSize:'14px'}}
+                    title= "Edit"
+                    onClick={()=>handleEditReview(rev)}></i>
+
+                    <i className='fas fa-trash-alt text-danger me-2'
+                    style={{cursor:'pointer', fontSize:'14px'}}
+                    title= "Edit"
+                    onClick={()=>handleDeleteReview(rev.id)}></i>
+
+                  </div>
+                )}
+              </div>
+                <div>
+                  <p className='mb-1'>{rev.comment}</p>
+                  <p className='text-muted'>{new Date(rev.created_at).toLocaleString()}</p>
+                </div>
+            </div>
+            ))
+          )}
+        </div>
+
+    <div className='mt-5'>
+      <h5><i className='fas fa-pen me-1'></i>Write a Review</h5>
+
+      <div className='mb-3'>
+        <label className='form-label'>Your Rating</label>
+        <div>{renderStars(rating, true)}</div>
+      
+      </div>
+      <div className='mb-3'>
+        <textarea className='form-control' placeholder='Write your Review...' rows={3} value={comment} onChange={(e) => setComment(e.target.value)}/>
+
+      </div>
+      <button className='btn btn-success'
+      onClick={handleReviewSubmit}
+      >
+        <i className='fas fa-paper-plane'></i>Submit Review
+      </button>
+
+    </div>
     </div>
     </PublicLayout>
   )

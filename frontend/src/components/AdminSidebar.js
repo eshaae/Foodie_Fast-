@@ -118,11 +118,11 @@ const AdminSidebar = () => {
             </Link>
         </div>
 
-        <div className='list-group list-group-flush'>
+        {/* <div className='list-group list-group-flush'>
             <Link className='list-group-item list-group-item-action bg-dark text-white'>
                 <FaStar/>    Manage Reviews
             </Link>
-        </div>
+        </div> */}
         </div>
 
     </div>

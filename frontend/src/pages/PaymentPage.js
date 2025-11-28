@@ -102,6 +102,7 @@ const PaymentPage = () => {
                     value='online' 
                     checked={paymentMode === 'online'}
                     onChange={(e) => setPaymentMode('online')}
+                    disabled
                 />
                 <label className="form-check-label">Online Payment</label>
             </div>

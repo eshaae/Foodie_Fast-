@@ -25,6 +25,7 @@ const [topFoods, setTopFoods] = useState([]);
                     <tr>
                         <th>S.N.</th>
                         <th>Food Item</th>
+                        <th>Price</th>
                         <th>Total Sold</th>
                     </tr>
                 </thead>
@@ -33,6 +34,7 @@ const [topFoods, setTopFoods] = useState([]);
                         <tr key={index}>
                         <td >{index+1}</td>
                         <td>{food.food__item_name}</td>
+                        <td>Rs.{food.food__item_price}</td>
                         <td>{food.total_sold}</td>
                     </tr>
                     ))}
