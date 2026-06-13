@@ -12,6 +12,7 @@ const WeeklySalesSummary = () => {
                    .then(data => {
                       
                        setData(data)
+                       
                    })
                
                  },[]);

@@ -121,7 +121,7 @@ const Home = () => {
   return (
     <PublicLayout>
        <ToastContainer position="top-center" autoClose={2000} />
-    <section className ='hero py-5 text-center' style={{backgroundImage:"url('/images/interior2.jpg')"}}>
+    <section className ='hero py-5 text-center' style={{backgroundImage:"url('/images/bg13.jpg')"}}>
       <div style={{
         backgroundColor:"rgba(1,1,1, 0)", padding:"40px 20px", 
         borderRadius: "10px", 

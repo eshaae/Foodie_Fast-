@@ -13,17 +13,52 @@ const PaymentPage = () => {
     expiry: "",
     cvv: "",
   });
+  const [openingHour, setOpeningHour] = useState(null);
+  const [closingHour, setClosingHour] = useState(null);
   const navigate = useNavigate();
   
   useEffect(() => {
+    
       //if user came directly from url not loggedin user then,
       if (!userId) {
         navigate("/login");
-        return;
+       
       }
+    }, [userId, navigate])
+
+    useEffect(() => {
+  fetch("http://127.0.0.1:8000/api/opening_hours/")
+    .then(res => res.json())
+    .then(data => {
+      setOpeningHour(data.opening_hour);
+      setClosingHour(data.closing_hour);
     })
+    .catch(err => console.error(err));
+}, []);
+
+      // Check if restaurant is open
+const isRestaurantOpen = () => {
+  if (openingHour === null || closingHour === null) return false;
+
+  const now = new Date();
+  const currentTime = now.getHours() + now.getMinutes() / 60;
+  return currentTime >= openingHour && currentTime <= closingHour;
+};
+
 
   const handlePlaceOrder = async () => {
+     // Check restaurant hours
+    if (!isRestaurantOpen()) {
+      toast.error("Sorry! Orders can only be placed between 9 AM and 9 PM.");
+      return;
+    }
+
+    // Validate address
+    if (!address) {
+      toast.error("Please enter delivery address");
+      return;
+    }
+
     if (paymentMode === "online") {
       const { cardNumber, expiry, cvv } = cardDetails;
 
@@ -50,6 +85,7 @@ const PaymentPage = () => {
 
         if (response.status === 201) {
           toast.success(result.message);
+          localStorage.removeItem("cart"); // Clear cart after successful order
           setTimeout(() => {
             navigate("/my-orders");
           }, 2000);

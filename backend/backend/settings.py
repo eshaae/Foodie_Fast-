@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'foodordering',
     'rest_framework',
     'corsheaders',
+    
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'foodordering.middleware.OrderTimeMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -131,3 +133,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# eSewa Sandbox Credentials
+ESEWA_MERCHANT_ID = 'EPAYTEST'
+ESEWA_SECRET_KEY = 'S3CR3T'
+ESEWA_SUCCESS_URL = 'http://localhost:8000/payment/success/'
+ESEWA_FAILURE_URL = 'http://localhost:8000/payment/failure/'

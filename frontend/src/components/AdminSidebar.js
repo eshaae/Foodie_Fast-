@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-
+import '../styles/admin.css';
 import {Link} from 'react-router-dom'
 import { FaChevronUp, FaChevronDown, FaEdit, FaStar, FaSearch, FaThLarge, FaUser, FaList, FaFile } from 'react-icons/fa';
 
@@ -15,7 +15,8 @@ const AdminSidebar = () => {
         setOpenMenus((prev) => ({...prev, [menu]:!prev[menu]}));
     }
   return (
-    <div className='bg-dark text-white sidebar'>
+    //bg-dark
+    <div className='text-white sidebar'> 
         <div className='text-center p-3 border-bottom'>
             <img src="/images/admin.png" className='img-fluid rounded-circle mb-2' width="70" alt="admin images"/>
             <h6 className='mb-0'>Admin</h6>
@@ -51,7 +52,7 @@ const AdminSidebar = () => {
         )}
 
         <button onClick= {()=>toggleMenu('food')}className='list-group-item list-group-item-action bg-dark text-white border-0'>
-            <FaEdit/>        Food Menus {openMenus.category ? <FaChevronUp/> : <FaChevronDown/>}
+            <FaEdit/>        Food Menus {openMenus.food ? <FaChevronUp/> : <FaChevronDown/>}
         </button>
 
         {openMenus.food && (
@@ -69,7 +70,7 @@ const AdminSidebar = () => {
 
 
         <button onClick= {()=>toggleMenu('orders')}className='list-group-item list-group-item-action bg-dark text-white border-0'>
-            <FaList/>        Orders {openMenus.category ? <FaChevronUp/> : <FaChevronDown/>}
+            <FaList/>        Orders {openMenus.orders ? <FaChevronUp/> : <FaChevronDown/>}
         </button>
 
         {openMenus.orders && (
@@ -95,7 +96,7 @@ const AdminSidebar = () => {
                   Delivered
             </Link>
 
-             <Link to="/order-cancelled "className='list-group-item list-group-item-action bg-dark text-white border-0'>
+             <Link to="/order-cancelled"className='list-group-item list-group-item-action bg-dark text-white border-0'>
                   Cancelled
             </Link>
 
@@ -118,11 +119,11 @@ const AdminSidebar = () => {
             </Link>
         </div>
 
-        {/* <div className='list-group list-group-flush'>
-            <Link className='list-group-item list-group-item-action bg-dark text-white'>
+        <div className='list-group list-group-flush'>
+            <Link className='list-group-item list-group-item-action bg-dark text-white' to="/manage-reviews">
                 <FaStar/>    Manage Reviews
             </Link>
-        </div> */}
+        </div>
         </div>
 
     </div>

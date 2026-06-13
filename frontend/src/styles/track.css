@@ -22,3 +22,13 @@
     background-color: #dee2e6;
     z-index: 0;
 }
+
+.list-group-item {
+  background-color: #fff !important;
+  color: #212529 !important;
+}
+
+.list-group-item:hover {
+  background-color: #cabdbd  !important;
+  color: #212529  !important;
+}

@@ -94,7 +94,10 @@ def register_user(request):
     mobile = request.data.get('mobilenumber')
     email = request.data.get('email')
     password = request.data.get('password')
-   
+
+    if not mobile or not mobile.isdigit() or len(mobile) != 10:
+        return Response({'message': 'Mobile number must be  10 digits.'}, status=400)
+
     if User.objects.filter(email = email).exists() or User.objects.filter(mobile = mobile).exists():
         return Response({'message':'Email or mobile number already registered!'}, status=400)
     User.objects.create(first_name = first_name, last_name = last_name, email= email, mobile = mobile,
@@ -158,7 +161,7 @@ def add_to_cart(request):
          return Response({'message':'Food added to cart successfully.'},status=200)
          
     except:
-        return Response({"message":"Something went wrong!!!"},status = 404)
+        return Response({"message":"Login to add items into cart!!!"},status = 404)
 
 from .serializers import CartOrderSerializer 
 @api_view(['GET'])
@@ -170,11 +173,11 @@ def get_cart_items(request, user_id):
 
 @api_view(['PUT'])
 def update_cart_quantity(request):
-     order_id = request.data.get('orderId')
+     order_number = request.data.get('orderId')
      quantity = request.data.get('quantity')
     
      try:
-        order = Order.objects.get(id=order_id, is_order_placed = False)
+        order = Order.objects.get(id=order_number, is_order_placed = False)
         order.quantity = quantity
         order.save()
          
@@ -190,10 +193,10 @@ def delete_cart_item (request, order_id):
         order = Order.objects.get(id=order_id, is_order_placed = False)
         order.delete()
          
-        return Response({'message':'Item deleted from cart'},status=200)
+        return Response({'message':'Item deleted from cart'},status=204)
          
-     except:
-        return Response({"message":"Something went wrong!!!"},status = 404)
+     except Order.DoesNotExist:
+        return Response({"message":"Cart item not found or already ordered!!!"},status = 404)
 
 
 
@@ -686,7 +689,7 @@ def weekly_sales_summary(request):
 
     weekly_totals=defaultdict(lambda: Decimal('0.00'))
     for addr in addresses:
-        label= addr['week'].strftime('Week %W')
+        label= addr['week'].strftime('%Y-Week%W')
         weekly_totals[label] += order_price_map.get(addr['order_number'], Decimal(0.00))
 
     result = [{"week":w, "sales":total} for w,total in weekly_totals.items() ]
@@ -708,7 +711,7 @@ def weekly_user_registrations(request):
         
 
     result = [
-        {"week":entry['week'].strftime('Week %W'), 
+        {"week":entry['week'].strftime('%Y Week %W'), 
                "new_users":entry['new_users']
         } 
         for entry in data
@@ -762,7 +765,7 @@ def track_order(request, order_number):
         return Response([{
             'status': 'Order Placed',
             'remark': 'Waiting for processing',
-            'timestamp': sample_order.id
+            'status_date': sample_order.created_at if hasattr(sample_order, 'created_at') else None
         }])
 
     serializer = FoodTrackingSerializer(tracking_entries, many=True)
@@ -853,3 +856,33 @@ def food_rating_summary(request, food_id):
         'total_reviews':total_reviews,
         'breakdown':{entry['rating']: entry['count'] for entry in rating_summary}#shows rating with total count
     })
+
+
+
+from django.http import JsonResponse
+
+OPENING_HOUR = 9
+CLOSING_HOUR = 21
+def opening_hours(request):
+    return JsonResponse({
+        "opening_hour": OPENING_HOUR,
+        "closing_hour": CLOSING_HOUR
+    })
+
+
+@api_view(['GET'])
+def all_reviews(request):
+    reviews = Review.objects.select_related('user', 'food').order_by('-created_at')
+    serializer = ReviewSerializer(reviews, many=True)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_review(request, id):
+    try: 
+        reviews = Review.objects.get(id = id)
+        reviews.delete()
+        return Response({"message":"Review deleted successfully!!!"}, status = 200)
+    except Review.DoesNotExist:
+        return Response({"message":"Review Not Found!!!"}, status = 404)
+    
+     

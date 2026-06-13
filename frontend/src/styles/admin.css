@@ -10,13 +10,32 @@
     position: fixed;
     top:0;
     left:0;
-
+     background-color: #493333 ;
+    
 }
 
-.list-group-item:hover{
+.sidebar .list-group-item {
+  background-color: #493333  !important;
+  color: #fff !important;
+ 
+}
+
+.sidebar .list-group-item:hover {
+  background-color: #493333!important;
+  color: #f8f9fa !important;
+}
+
+/* .list-group-item:hover{
     background-color: #1a1a1a !important;
     color: yellow !important;
+} */
+
+.sidebar .list-group-item.list-group-item-action:hover,
+.sidebar .list-group-item.list-group-item-action:focus {
+    background-color: #493333!important;
+    color: yellow !important;
 }
+
 
 #page-content-wrapper.with-sidebar{
     margin-left:250px;

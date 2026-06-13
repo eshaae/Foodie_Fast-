@@ -2,6 +2,7 @@
 from django.urls import path
 
 from .views import *
+
 urlpatterns = [
    
     path('admin-login/', admin_login_api), 
@@ -56,6 +57,11 @@ urlpatterns = [
     path('reviews/<int:food_id>/',food_reviews),
     path('review_edit/<int:id>/',review_detail),
     path('food_rating_summary/<int:food_id>/',food_rating_summary),
+    path("opening_hours/",opening_hours),
+    path ('all-reviews/', all_reviews),
+    path('delete_review/<int:id>/',delete_review),
+    
+
 
 
 

@@ -43,12 +43,12 @@ const SearchPage = () => {
                     <img src= {`http://127.0.0.1:8000${food.image}`} className='card-img-top' style={{height:'180px'}} alt='search_img'/>
                     <div className='card-body ' >
                         <h5 className='card-title'>
-                            <Link to=''>{food.item_name} {food.image}</Link>
+                            <Link to=''>{food.item_name}</Link>
                         </h5>   
                         <p className='card-text text-muted'> {food.item_description?.slice(0,40)}...</p>
 
                         <div className='d-flex justify-content-between align-items-center'>
-                            <span className='fw-bold'>₹ {food.item_price}</span>
+                            <span className='fw-bold'>Rs. {food.item_price}</span>
                             {food.is_available ? (<Link to='' className='btn btn-outline-primary btn-sm'>
                                 <i className='fas fa-shopping-basket me-1'></i>Order Now
                             </Link>) : (

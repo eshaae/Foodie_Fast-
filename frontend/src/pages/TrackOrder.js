@@ -82,7 +82,9 @@ const TrackOrder = () => {
                 <i className='fas fa-check'></i>
               </div>
               <small className='d-block fw-bold'>{entry.status}</small>
-              <small className='text-muted'>{new Date(entry.status_date).toLocaleDateString()}</small>
+              <small className='text-muted ' >
+              {entry.status_date ? new Date(entry.status_date).toLocaleDateString() : "Not available"}
+              </small>
                </div>
               
             ))}
@@ -95,7 +97,9 @@ const TrackOrder = () => {
             <span className={`badge ${getBadge(entry.status)} me-2`}>{entry.status}</span> 
             {entry.remark}
             <br/>
-            <small className='text-muted ' >{new Date(entry.status_date).toLocaleDateString()}</small>
+            <small className='text-muted ' >
+              {entry.status_date ? new Date(entry.status_date).toLocaleDateString() : "Not available"}
+            </small>
             {entry.order_cancelled_by_user &&(
               <span className={`badge ${getBadge(entry.status)} ms-2`}>Cancelled By User.</span> 
             )}

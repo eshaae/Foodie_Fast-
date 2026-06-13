@@ -78,7 +78,7 @@ import { useCart } from '../context/CartContext'
               });
         
         
-              if (response.status === 200) {
+              if (response.ok) {
                 const updated = await fetch(`http://127.0.0.1:8000/api/cart/${userId}`)
                 const data = await updated.json();
                 setCartItems(data);

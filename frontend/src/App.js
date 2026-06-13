@@ -34,6 +34,7 @@ import FoodList from './pages/FoodList';
 import { WishlistProvider } from './context/WishlistContext';
 import Wishlist from './pages/Wishlist';
 import TrackOrder from './pages/TrackOrder';
+import ManageReviews from './pages/ManageReviews';
 
 
 
@@ -63,6 +64,7 @@ function App() {
       <Route path ="edit_category/:id" element ={<EditCategory/>}></Route>
       <Route path ="edit_food/:id" element ={<EditFood/>}></Route>
       <Route path ="manage_users" element ={<ManageUser/>}></Route>
+      <Route path ="manage-reviews" element ={<ManageReviews/>}></Route>
       
 
 
